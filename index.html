@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="stylesheet" type="text/css" href="./mystyle.css">
+    </head>
+    <header>
+        CFC Order Form
+    </header>
+
+    <body>
+        <script src="./script.js"> </script>
+
+        <h1>Bill To Details</h1>
+        <form>
+            <label for="bill_to_date"> Date: </label>
+            <input type="date" id="bill_to_date" name="bill_to_date"><br>
+
+            <label for="bill_to_name"> Name: </label>
+            <input type="text" id="bill_to_name" name="bill_to_name"><br>
+
+            <label for="bill_to_address"> Address: </label>
+            <input type="text" id="bill_to_address" name="bill_to_address" oninput="BillingAddressInput(this)"
+                placeholder="Enter an address here" list="bill_to_address_entries" size="50">
+            <datalist id="bill_to_address_entries">
+            </datalist>
+
+            <p id="dynamic_text"></p>
+
+        </form>
+
+    </body>
+
+</html>
