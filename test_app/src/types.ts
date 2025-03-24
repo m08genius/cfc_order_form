@@ -18,7 +18,6 @@ export interface IndividualItem extends BaseItem {
   type: 'individual';
   salePrice: number;
   extendedPrice: number;
-  deliveryDate: string;
   isAdded: boolean;
 }
 
@@ -29,7 +28,6 @@ export interface PackageType extends BaseItem {
   packageItems: PackageItem[];
   salePrice: number;
   extendedPrice: number;
-  deliveryDate: string;
   isAdded: boolean;
 }
 
@@ -69,6 +67,10 @@ export interface OrderForm {
   // Order Details
   deliveryType: 'pickup' | 'delivery';
   orderDetails: OrderDetail[];
+
+  // Other Details
+  deliveryDate: string;
+  carePlan: 'yes' | 'no';
 }
 
 export interface PhoneErrors {

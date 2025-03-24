@@ -118,10 +118,9 @@ export const OrderDetailInput: React.FC<OrderDetailInputProps> = ({
           />
         </div>
 
-        <div className="form-group full-width">
-          <label htmlFor="description">Description:</label>
-          <input
-            type="text"
+        <div className="form-group">
+          <label htmlFor="description">Description</label>
+          <textarea
             id="description"
             value={detail.description}
             onChange={(e) => onDetailChange('description', e.target.value)}
@@ -129,41 +128,27 @@ export const OrderDetailInput: React.FC<OrderDetailInputProps> = ({
           />
         </div>
 
-        <div className="form-group">
-          <label htmlFor="salePrice">Sale Price:</label>
-          <input
-            type="number"
-            id="salePrice"
-            value={detail.salePrice}
-            onChange={(e) => handleNumberChange('salePrice', e.target.value)}
-            step="0.01"
-            min="0"
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="extendedPrice">Extended Price:</label>
-          <input
-            type="number"
-            id="extendedPrice"
-            value={detail.extendedPrice}
-            onChange={(e) => handleNumberChange('extendedPrice', e.target.value)}
-            step="0.01"
-            min="0"
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="deliveryDate">Delivery Date:</label>
-          <input
-            type="date"
-            id="deliveryDate"
-            value={detail.deliveryDate}
-            onChange={(e) => onDetailChange('deliveryDate', e.target.value)}
-            required
-          />
+        <div className="form-row">
+          <div className="form-group">
+            <label htmlFor="salePrice">Sale Price</label>
+            <input
+              type="number"
+              id="salePrice"
+              value={detail.salePrice}
+              onChange={(e) => onDetailChange('salePrice', parseFloat(e.target.value))}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="extendedPrice">Extended Price</label>
+            <input
+              type="number"
+              id="extendedPrice"
+              value={detail.extendedPrice}
+              onChange={(e) => onDetailChange('extendedPrice', parseFloat(e.target.value))}
+              required
+            />
+          </div>
         </div>
       </div>
 

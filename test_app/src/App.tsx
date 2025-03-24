@@ -1,135 +1,56 @@
 import React, { useState } from 'react';
 import './App.css';
+import { OtherDetails } from './components/OtherDetails';
+import { 
+  OrderForm,
+  PhoneErrors, 
+  EmailErrors, 
+  OrderDetail, 
+  PackageType, 
+  IndividualItem,
+  isPackageType,
+  INITIAL_PHONE_STATE,
+  PhoneNumber,
+  PackageItem
+} from './types';
 
-// Base interface for common fields
-interface BaseItem {
-  id: string;
-  location: 'S1' | 'S2' | '999';
-  quantity: number;
-  vendor: string;
-  sku: string;
-  grade: string;
-  cover: string;
-  description: string;
-}
-
-// Interface for items within a package
-interface PackageItem extends BaseItem {}
-
-// Interface for individual items
-interface IndividualItem extends BaseItem {
-  type: 'individual';
-  salePrice: number;
-  extendedPrice: number;
-  deliveryDate: string;
-  isAdded: boolean;
-}
-
-// Interface for package type items
-interface PackageType extends BaseItem {
-  type: 'package';
-  packageName: string;
-  packageItems: PackageItem[];
-  salePrice: number;
-  extendedPrice: number;
-  deliveryDate: string;
-  isAdded: boolean;
-}
-
-// Union type for order details
-type OrderDetail = IndividualItem | PackageType;
-
-interface PhoneNumber {
-  type: 'cell' | 'home' | '';
-  areaCode: string;
-  prefix: string;
-  lineNumber: string;
-}
-
-interface OrderForm {
-  // Store Selection
-  selectedStore: string;
-  salespersonName: string;
-  
-  // Billing Information
-  billingName: string;
-  billingEmail: string;
-  billingPhones: PhoneNumber[];
-  billingAddress: string;
-  billingCity: string;
-  billingState: string;
-  billingZipCode: string;
-  
-  // Shipping Information
-  shippingName: string;
-  shippingEmail: string;
-  shippingPhones: PhoneNumber[];
-  shippingAddress: string;
-  shippingCity: string;
-  shippingState: string;
-  shippingZipCode: string;
-  
-  // Order Details
-  deliveryType: 'pickup' | 'delivery';
-  orderDetails: OrderDetail[];
-}
-
-interface PhoneErrors {
-  billing?: string[];
-  shipping?: string[];
-}
-
-interface EmailErrors {
-  billing?: string;
-  shipping?: string;
-}
-
-// Type guard to check if an OrderDetail is a PackageType
-function isPackageType(detail: OrderDetail): detail is PackageType {
-  return detail.type === 'package';
-}
+const INITIAL_ORDER_DETAIL: IndividualItem = {
+  id: crypto.randomUUID(),
+  type: 'individual' as const,
+  location: 'S1',
+  quantity: 1,
+  vendor: '',
+  sku: '',
+  grade: '',
+  cover: '',
+  description: '',
+  salePrice: 0,
+  extendedPrice: 0,
+  isAdded: false
+};
 
 function App() {
   const [formData, setFormData] = useState<OrderForm>({
-    // Store Selection
     selectedStore: '',
     salespersonName: '',
-    
-    // Billing Information
     billingName: '',
     billingEmail: '',
-    billingPhones: [{ type: '', areaCode: '', prefix: '', lineNumber: '' }],
+    billingPhones: [INITIAL_PHONE_STATE],
     billingAddress: '',
     billingCity: '',
     billingState: '',
     billingZipCode: '',
-    
-    // Shipping Information
     shippingName: '',
     shippingEmail: '',
-    shippingPhones: [{ type: '', areaCode: '', prefix: '', lineNumber: '' }],
+    shippingPhones: [INITIAL_PHONE_STATE],
     shippingAddress: '',
     shippingCity: '',
     shippingState: '',
     shippingZipCode: '',
-    
-    // Order Details
     deliveryType: 'pickup',
-    orderDetails: [{
-      id: crypto.randomUUID(),
-      type: 'individual',
-      location: 'S1',
-      quantity: 1,
-      vendor: '',
-      sku: '',
-      grade: '',
-      cover: '',
-      description: '',
-      salePrice: 0,
-      extendedPrice: 0,
-      deliveryDate: '',
-      isAdded: false
-    } as IndividualItem]
+    orderDetails: [INITIAL_ORDER_DETAIL],
+    deliveryDate: '',
+    carePlan: 'no'
   });
 
   const [phoneError, setPhoneError] = useState<PhoneErrors>({});
@@ -320,34 +241,41 @@ function App() {
     }
   };
 
-  const handleOrderDetailChange = (index: number, field: keyof OrderDetail, value: string | number) => {
-    setFormData(prev => ({
-      ...prev,
-      orderDetails: prev.orderDetails.map((detail, i) => 
-        i === index ? { ...detail, [field]: value } : detail
-      )
-    }));
+  const handleOrderDetailChange = (index: number, field: keyof (OrderDetail & PackageType), value: string | number) => {
+    setFormData(prev => {
+      const newOrderDetails = [...prev.orderDetails];
+      newOrderDetails[index] = {
+        ...newOrderDetails[index],
+        [field]: value
+      };
+
+      return {
+        ...prev,
+        orderDetails: newOrderDetails
+      };
+    });
   };
 
   const handlePackageModeToggle = () => {
-    setFormData(prev => ({
-      ...prev,
-      orderDetails: prev.orderDetails.map((detail, i) => 
-        i === 0 ? (
-          detail.type === 'individual' 
-            ? {
-                ...detail,
-                type: 'package' as const,
-                packageName: '',
-                packageItems: []
-              } as PackageType
-            : {
-                ...detail,
-                type: 'individual' as const,
-              } as IndividualItem
-        ) : detail
-      )
-    }));
+    setFormData(prev => {
+      const currentItem = prev.orderDetails[0];
+      const newItem = currentItem.type === 'package' 
+        ? { ...INITIAL_ORDER_DETAIL }
+        : {
+            ...INITIAL_ORDER_DETAIL,
+            type: 'package' as const,
+            packageName: '',
+            packageItems: [] as PackageItem[]
+          } as PackageType;
+
+      return {
+        ...prev,
+        orderDetails: [
+          newItem,
+          ...prev.orderDetails.filter(detail => detail.isAdded)
+        ]
+      };
+    });
   };
 
   const handlePackageItemChange = (itemId: string, field: keyof PackageItem, value: string | number) => {
@@ -403,56 +331,18 @@ function App() {
   const addOrderDetail = () => {
     const currentItem = formData.orderDetails[0];
     
-    // Validate based on type
-    if (currentItem.type === 'package') {
-      if (!currentItem.packageName) {
-        alert('Please enter a package name');
-        return;
-      }
-      if (!currentItem.packageItems?.length) {
-        alert('Please add at least one item to the package');
-        return;
-      }
-      if (!currentItem.packageItems.every(item => item.vendor && item.sku && item.description)) {
-        alert('Please fill in all required fields for each package item');
-        return;
-      }
-    } else {
-      if (!currentItem.vendor || !currentItem.sku || !currentItem.description) {
-        alert('Please fill in all required fields');
-        return;
-      }
+    if (!validateOrderDetail(currentItem)) {
+      return;
     }
 
-    // Add the current item to the summary
     setFormData(prev => {
       const newOrderDetails: OrderDetail[] = [
-        // Keep the current form (first item) unchanged
         prev.orderDetails[0],
-        // Add any previously added items
-        ...prev.orderDetails.filter(detail => detail.isAdded)
+        ...prev.orderDetails.filter(detail => detail.isAdded),
+        { ...currentItem, isAdded: true }
       ];
 
-      // Add the current item
-      newOrderDetails.push({ ...currentItem, isAdded: true });
-
-      // Reset the form fields while keeping the delivery date
-      const deliveryDate = prev.orderDetails[0].deliveryDate;
-      newOrderDetails[0] = {
-        id: crypto.randomUUID(),
-        type: 'individual',
-        location: 'S1',
-        quantity: 1,
-        vendor: '',
-        sku: '',
-        grade: '',
-        cover: '',
-        description: '',
-        salePrice: 0,
-        extendedPrice: 0,
-        deliveryDate: deliveryDate,
-        isAdded: false
-      };
+      newOrderDetails[0] = { ...INITIAL_ORDER_DETAIL };
 
       return {
         ...prev,
@@ -639,6 +529,29 @@ function App() {
         } : detail
       )
     }));
+  };
+
+  const validateOrderDetail = (detail: OrderDetail): boolean => {
+    if (isPackageType(detail)) {
+      if (!detail.packageName) {
+        alert('Please enter a package name');
+        return false;
+      }
+      if (!detail.packageItems?.length) {
+        alert('Please add at least one item to the package');
+        return false;
+      }
+      if (!detail.packageItems.every(item => item.vendor && item.sku && item.description)) {
+        alert('Please fill in all required fields for each package item');
+        return false;
+      }
+    } else {
+      if (!detail.vendor || !detail.sku || !detail.description) {
+        alert('Please fill in all required fields');
+        return false;
+      }
+    }
+    return true;
   };
 
   return (
@@ -1265,19 +1178,13 @@ function App() {
             </button>
           </div>
 
-          {/* Delivery Date Section */}
+          {/* Replace the old delivery date section with OtherDetails */}
           <div className="form-section">
-            <h2>Delivery Date</h2>
-            <div className="form-group">
-              <label htmlFor="deliveryDate">Delivery Date *</label>
-              <input
-                type="date"
-                id="deliveryDate"
-                value={formData.orderDetails[0].deliveryDate}
-                onChange={(e) => handleOrderDetailChange(0, 'deliveryDate', e.target.value)}
-                required
-              />
-            </div>
+            <OtherDetails
+              deliveryDate={formData.deliveryDate}
+              carePlan={formData.carePlan}
+              onInputChange={handleChange}
+            />
           </div>
 
           <div className="button-group">
@@ -1413,10 +1320,11 @@ function App() {
             </table>
           </div>
 
-          <div className="print-delivery-info">
+          <div className="delivery-info">
             <h2>Delivery Information</h2>
             <p><strong>Delivery Type:</strong> {formData.deliveryType}</p>
-            <p><strong>Delivery Date:</strong> {formData.orderDetails[0].deliveryDate}</p>
+            <p><strong>Delivery Date:</strong> {formData.deliveryDate}</p>
+            <p><strong>5 Year Comprehensive Care Plan:</strong> {formData.carePlan === 'yes' ? 'Yes' : 'No'}</p>
           </div>
         </div>
       </div>

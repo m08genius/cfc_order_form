@@ -23,7 +23,6 @@ const INITIAL_ORDER_DETAIL: IndividualItem = {
   description: '',
   salePrice: 0,
   extendedPrice: 0,
-  deliveryDate: '',
   isAdded: false
 };
 
@@ -45,7 +44,9 @@ const INITIAL_FORM_STATE: OrderForm = {
   shippingState: '',
   shippingZipCode: '',
   deliveryType: 'pickup',
-  orderDetails: [INITIAL_ORDER_DETAIL]
+  orderDetails: [INITIAL_ORDER_DETAIL],
+  deliveryDate: '',
+  carePlan: 'no'
 };
 
 export function useOrderForm() {
@@ -200,7 +201,7 @@ export function useOrderForm() {
         { ...currentItem, isAdded: true }
       ];
 
-      newOrderDetails[0] = { ...INITIAL_ORDER_DETAIL, deliveryDate: prev.orderDetails[0].deliveryDate };
+      newOrderDetails[0] = { ...INITIAL_ORDER_DETAIL };
 
       return {
         ...prev,
